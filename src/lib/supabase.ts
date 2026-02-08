@@ -7,5 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookieOptions: {
         domain: '.f-pedia.my.id',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
     },
 })

@@ -30,7 +30,12 @@ export async function middleware(request: NextRequest) {
                         },
                     })
                     cookiesToSet.forEach(({ name, value, options }) =>
-                        response.cookies.set(name, value, { ...options, domain: '.f-pedia.my.id' })
+                        response.cookies.set(name, value, {
+                            ...options,
+                            domain: '.f-pedia.my.id',
+                            sameSite: 'lax',
+                            secure: process.env.NODE_ENV === 'production',
+                        })
                     )
                 },
             },

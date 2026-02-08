@@ -21,7 +21,12 @@ export async function GET(request: Request) {
                     setAll(cookiesToSet) {
                         try {
                             cookiesToSet.forEach(({ name, value, options }) =>
-                                cookieStore.set(name, value, { ...options, domain: '.f-pedia.my.id' })
+                                cookieStore.set(name, value, {
+                                    ...options,
+                                    domain: '.f-pedia.my.id',
+                                    sameSite: 'lax',
+                                    secure: process.env.NODE_ENV === 'production',
+                                })
                             )
                         } catch {
                             // The `setAll` method was called from a Server Component.
