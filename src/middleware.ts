@@ -4,14 +4,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
-
-    // Skip middleware for auth internal routes
-    if (path.startsWith('/auth/callback') || path.startsWith('/api/auth/')) {
+    if (path === '/auth/callback' || path.startsWith('/api/auth/')) {
         return NextResponse.next()
     }
 
-    let supabaseResponse = NextResponse.next({
-        request,
+    let response = NextResponse.next({
+        request: {
+            headers: request.headers,
+        },
     })
 
     const supabase = createServerClient(
@@ -24,11 +24,13 @@ export async function middleware(request: NextRequest) {
                 },
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-                    supabaseResponse = NextResponse.next({
-                        request,
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
                     })
                     cookiesToSet.forEach(({ name, value, options }) =>
-                        supabaseResponse.cookies.set(name, value, options)
+                        response.cookies.set(name, value, { ...options, domain: '.f-pedia.my.id' })
                     )
                 },
             },
@@ -38,25 +40,24 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Protect Admin Routes
-    if (path.startsWith('/admin')) {
+    if (request.nextUrl.pathname.startsWith('/admin')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        const ADMIN_EMAIL = 'ae132118@gmail.com'
-        if (user.email !== ADMIN_EMAIL) {
+        if (user.email !== 'ae132118@gmail.com') {
             return NextResponse.redirect(new URL('/', request.url))
         }
     }
 
     // Protect User Dashboard
-    if (path.startsWith('/dashboard')) {
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
-    return supabaseResponse
+    return response
 }
 
 export const config = {
@@ -66,8 +67,8 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * - public folder files
+         * Feel free to modify this pattern to include more paths.
          */
-        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico).*)',
     ],
 }
