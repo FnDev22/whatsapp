@@ -4,14 +4,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
-    if (path === '/auth/callback' || path.startsWith('/api/auth/')) {
+
+    // Skip middleware for auth internal routes
+    if (path.startsWith('/auth/callback') || path.startsWith('/api/auth/')) {
         return NextResponse.next()
     }
 
-    let response = NextResponse.next({
-        request: {
-            headers: request.headers,
-        },
+    let supabaseResponse = NextResponse.next({
+        request,
     })
 
     const supabase = createServerClient(
@@ -24,13 +24,11 @@ export async function middleware(request: NextRequest) {
                 },
                 setAll(cookiesToSet) {
                     cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-                    response = NextResponse.next({
-                        request: {
-                            headers: request.headers,
-                        },
+                    supabaseResponse = NextResponse.next({
+                        request,
                     })
                     cookiesToSet.forEach(({ name, value, options }) =>
-                        response.cookies.set(name, value, options)
+                        supabaseResponse.cookies.set(name, value, options)
                     )
                 },
             },
@@ -40,24 +38,25 @@ export async function middleware(request: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Protect Admin Routes
-    if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (path.startsWith('/admin')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        if (user.email !== 'ae132118@gmail.com') {
+        const ADMIN_EMAIL = 'ae132118@gmail.com'
+        if (user.email !== ADMIN_EMAIL) {
             return NextResponse.redirect(new URL('/', request.url))
         }
     }
 
     // Protect User Dashboard
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (path.startsWith('/dashboard')) {
         if (!user) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
     }
 
-    return response
+    return supabaseResponse
 }
 
 export const config = {
@@ -67,8 +66,8 @@ export const config = {
          * - _next/static (static files)
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
-         * Feel free to modify this pattern to include more paths.
+         * - public folder files
          */
-        '/((?!_next/static|_next/image|favicon.ico).*)',
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
