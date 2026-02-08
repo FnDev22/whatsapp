@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { supabase } from '@/lib/supabase'
+import { type User } from '@supabase/supabase-js'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -22,8 +23,20 @@ function safeAvatarUrl(url: string | null | undefined): string | undefined {
     return url
 }
 
-export function Navbar() {
-    const [user, setUser] = useState<Profile | null>(null)
+interface NavbarProps {
+    initialUser?: User | null
+}
+
+export function Navbar({ initialUser }: NavbarProps) {
+    const [user, setUser] = useState<Profile | null>(initialUser ? {
+        id: initialUser.id,
+        email: initialUser.email || '',
+        full_name: initialUser.user_metadata?.full_name || initialUser.email || 'Profil',
+        whatsapp_number: '',
+        role: initialUser.email === ADMIN_EMAIL ? 'admin' : 'user',
+        avatar_url: initialUser.user_metadata?.avatar_url || '',
+        created_at: new Date().toISOString(),
+    } : null)
     const [mounted, setMounted] = useState(false)
     const router = useRouter()
     const { theme, setTheme, resolvedTheme } = useTheme()

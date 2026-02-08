@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { WhatsAppFloating } from "@/components/WhatsAppFloating";
+import { createClient } from "@/lib/supabase-server";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,16 +27,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <html lang="id" suppressHydrationWarning data-scroll-behavior="smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
-          <Navbar />
+          <Navbar initialUser={user} />
           <div className="flex min-h-screen flex-col">
             <main className="flex-1">{children}</main>
             <Footer />
