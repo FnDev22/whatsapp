@@ -161,7 +161,7 @@ export default async function Home() {
           </div>
 
           {list.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-muted rounded-3xl">
+            <div className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-muted rounded-3xl w-full max-w-3xl mx-auto px-6">
               <Search className="h-10 w-10 text-muted-foreground mb-4 opacity-50" />
               <h3 className="text-lg font-medium">Belum ada produk</h3>
               <p className="text-muted-foreground">Silakan cek kembali dalam beberapa saat.</p>
