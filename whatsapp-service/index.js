@@ -59,7 +59,6 @@ const server = http.createServer(async (req, res) => {
         // Return QR code sebagai PNG image
         if (currentQRCode) {
             try {
-                res.writeHead(200, { 'Content-Type': 'image/png' });
                 QRCode.toBuffer(currentQRCode, {
                     errorCorrectionLevel: 'H',
                     type: 'image/png',
@@ -67,22 +66,38 @@ const server = http.createServer(async (req, res) => {
                     margin: 2,
                     width: 500,
                 }, (err, buffer) => {
-                    if (err) {
-                        res.writeHead(500);
-                        res.end('Error generating QR');
-                    } else {
-                        res.end(buffer);
+                    try {
+                        if (err) {
+                            console.error('QR error:', err.message);
+                            if (!res.headersSent) {
+                                res.writeHead(500, { 'Content-Type': 'application/json' });
+                                res.end(JSON.stringify({ error: 'Error generating QR', detail: err.message }));
+                            }
+                        } else {
+                            if (!res.headersSent) {
+                                res.writeHead(200, { 'Content-Type': 'image/png' });
+                            }
+                            res.end(buffer);
+                        }
+                    } catch (e) {
+                        console.error('Response error:', e.message);
+                        if (!res.headersSent) {
+                            res.writeHead(500, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify({ error: 'Failed to send QR' }));
+                        }
                     }
                 });
             } catch (err) {
+                console.error('QR generation error:', err.message);
                 res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: 'Failed to generate QR' }));
+                res.end(JSON.stringify({ error: 'Failed to generate QR', detail: err.message }));
             }
         } else {
             res.writeHead(202, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({
                 status: 'waiting',
-                message: 'QR Code belum tersedia. Tunggu beberapa detik...'
+                message: 'QR Code belum tersedia. Tunggu beberapa detik untuk WhatsApp connection...',
+                hint: 'Cek /health endpoint untuk status koneksi'
             }));
         }
     } else if (req.url === '/pairing-code') {
