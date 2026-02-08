@@ -4,4 +4,3 @@ auth_info_baileys
 .env
 .git
 .gitignore
-*.md

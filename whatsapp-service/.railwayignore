@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment files (Railway uses secrets)
+.env
+.env.local
+.env.*.local
+
+# Documentation (tidak perlu di container)
+README.md
+TROUBLESHOOTING.md
+DEPLOYMENT_CHECKLIST.md
+FIXES_SUMMARY.md
+*.md
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary
+.tmp/
+temp/

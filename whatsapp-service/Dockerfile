@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -15,14 +16,25 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --production
 
 # Copy semua file project (kecuali yang di .dockerignore)
 COPY . .
 
-# Hugging Face Spaces menggunakan port 7860
-ENV PORT=7860
-EXPOSE 7860
+# Create auth folder dengan proper permissions
+RUN mkdir -p auth_info_baileys && chmod 755 auth_info_baileys
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=512"
+
+# For Railway: port bisa dynamic dari env, default 8000
+ENV PORT=${PORT:-8000}
+EXPOSE ${PORT:-8000}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
 # Jalankan aplikasi
 CMD ["node", "index.js"]

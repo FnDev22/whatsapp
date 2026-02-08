@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  whatsapp-service:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - ADMIN_WHATSAPP_NUMBER=${ADMIN_WHATSAPP_NUMBER:-6285814581266}
+      - PORT=7860
+    volumes:
+      - ./auth_info_baileys:/app/auth_info_baileys
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
